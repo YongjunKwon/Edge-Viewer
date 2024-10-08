@@ -7,8 +7,10 @@ function compile(directory) {
       cwd: directory,
     });
 
-    tscProcess.stdout.on('data', data => 
-        process.stdout.write(Chalk.yellowBright(`[tsc] `) + Chalk.white(data.toString()))
+    tscProcess.stdout.on('data', data =>
+      process.stdout.write(
+        Chalk.yellowBright(`[tsc] `) + Chalk.white(data.toString()),
+      ),
     );
 
     tscProcess.on('exit', exitCode => {

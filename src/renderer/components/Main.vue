@@ -1,55 +1,63 @@
 <template>
-  <v-container class="fill-height" fluid>
-    <splitpanes class="default-theme">
-      <pane>left</pane>
-      <pane>
-        <splitpanes horizontal>
-          <pane>top</pane>
-          <pane>main</pane>
-          <pane>bottom</pane>
-        </splitpanes>
+  <v-container class="fill-height ma-0 pa-0" fluid>
+    <Splitpanes :push-other-panes="false" :dblClickSplitter="false">
+      <pane min-size="20">
+        <LeftPanel />
       </pane>
-      <pane>right</pane>
-    </splitpanes>
+      <pane>
+        <Splitpanes horizontal :dblClickSplitter="false">
+          <pane>
+            <TopPanel />
+          </pane>
+          <pane>main</pane>
+          <pane min-size="1">
+            <BottomPanel />
+          </pane>
+        </Splitpanes>
+      </pane>
+      <pane>
+        <RightPanel />
+      </pane>
+    </Splitpanes>
   </v-container>
 </template>
 
 <script setup lang="ts">
-import { Splitpanes, Pane } from 'splitpanes'
-import 'splitpanes/dist/splitpanes.css'
+import LeftPanel from '@/components/LeftPanel.vue';
+import RightPanel from '@/components/RightPanel.vue';
+import TopPanel from '@/components/TopPanel.vue';
+import BottomPanel from '@/components/BottomPanel.vue';
+import { Splitpanes, Pane } from 'splitpanes';
+import 'splitpanes/dist/splitpanes.css';
+import { onBeforeMount, onMounted } from 'vue';
 
-defineProps({
+onMounted(() => {});
 
-})
-
+onBeforeMount(() => {
+  console.log('test');
+});
 </script>
 
 <style>
-.splitpanes__pane {
-  box-shadow: 0 0 3px rgba(0, 0, 0, .2) inset;
-  justify-content: center;
-  align-items: center;
-  display: flex;
+.splitpanes {
+  background-color: #f8f8f8;
 }
 
-// GENERAL STYLES.
-html, body, #app {height: 100%;margin: 0;}
-body {
-  font-family: Helvetica, Arial, sans-serif;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 5em;
+.splitpanes__splitter {
+  background-color: #ccc;
+  position: relative;
 }
-
-// documentation link.
-p {
+.splitpanes__splitter:before {
+  content: '';
   position: absolute;
-  bottom: 5px;
-  right: 5px;
-  color: #666;
-  z-index: 10;
-  font-size: 12px;
-
-  a {color: inherit;}
+  left: 0;
+  top: 0;
+  transition: opacity 0.4s;
+  background-color: rgba(255, 0, 0, 0.3);
+  opacity: 0;
+  z-index: 1;
 }
-
+.splitpanes__splitter:hover:before {
+  opacity: 3;
+}
 </style>
