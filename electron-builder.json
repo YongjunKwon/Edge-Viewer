@@ -8,7 +8,7 @@
         "oneClick": false,
         "perMachine": false,
         "allowToChangeInstallationDirectory": true,
-        "shortcutName": "Electron App"
+        "shortcutName": "Edge Viewer"
     },
     "win": {
         "target": "nsis"

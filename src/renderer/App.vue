@@ -1,17 +1,18 @@
-<script setup lang="ts">
+<script setup>
 import Main from './components/Main.vue';
-
-window.electronAPI.sendMessage('Launch succeeded!');
 </script>
 
 <template>
-  <Main />
+  <!--  <Main />-->
+  <router-view />
 </template>
 
 <style>
 html {
   overflow-y: auto !important;
   user-select: none;
+  width: 100%;
+  height: 100%;
 }
 html,
 body {

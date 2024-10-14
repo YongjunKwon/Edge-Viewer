@@ -1,21 +1,29 @@
 <template>
   <v-container class="fill-height ma-0 pa-0" fluid>
-    <Splitpanes :push-other-panes="false" :dblClickSplitter="false">
-      <pane min-size="20">
+    <Splitpanes
+      :push-other-panes="false"
+      :dblClickSplitter="false"
+      ref="splitpane"
+    >
+      <pane size="20">
         <LeftPanel />
       </pane>
       <pane>
-        <Splitpanes horizontal :dblClickSplitter="false">
-          <pane>
+        <Splitpanes
+          horizontal
+          :push-other-panes="false"
+          :dblClickSplitter="false"
+        >
+          <pane size="0">
             <TopPanel />
           </pane>
           <pane>main</pane>
-          <pane min-size="1">
+          <pane size="20">
             <BottomPanel />
           </pane>
         </Splitpanes>
       </pane>
-      <pane>
+      <pane size="20">
         <RightPanel />
       </pane>
     </Splitpanes>
@@ -23,24 +31,27 @@
 </template>
 
 <script setup lang="ts">
-import LeftPanel from '@/components/LeftPanel.vue';
-import RightPanel from '@/components/RightPanel.vue';
-import TopPanel from '@/components/TopPanel.vue';
-import BottomPanel from '@/components/BottomPanel.vue';
+import LeftPanel from '@/components/layout/LeftPanel.vue';
+import RightPanel from '@/components/layout/RightPanel.vue';
+import TopPanel from '@/components/layout/TopPanel.vue';
+import BottomPanel from '@/components/layout/BottomPanel.vue';
 import { Splitpanes, Pane } from 'splitpanes';
 import 'splitpanes/dist/splitpanes.css';
-import { onBeforeMount, onMounted } from 'vue';
+import { onBeforeMount, onMounted, ref } from 'vue';
 
-onMounted(() => {});
+const splitpane = ref(null);
+const leftPane = ref(null);
+const rightPane = ref(null);
+const topPane = ref(null);
+const bottomPane = ref(null);
 
-onBeforeMount(() => {
-  console.log('test');
-});
+onBeforeMount(() => {});
 </script>
 
 <style>
 .splitpanes {
   background-color: #f8f8f8;
+  width: 100%;
 }
 
 .splitpanes__splitter {
@@ -53,11 +64,17 @@ onBeforeMount(() => {
   left: 0;
   top: 0;
   transition: opacity 0.4s;
-  background-color: rgba(255, 0, 0, 0.3);
   opacity: 0;
   z-index: 1;
 }
-.splitpanes__splitter:hover:before {
-  opacity: 3;
+.splitpanes--vertical > .splitpanes__splitter:before {
+  left: -5px;
+  right: -5px;
+  height: 100%;
+}
+.splitpanes--horizontal > .splitpanes__splitter:before {
+  top: -5px;
+  bottom: -5px;
+  width: 100%;
 }
 </style>

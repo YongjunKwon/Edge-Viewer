@@ -19,7 +19,7 @@ module.exports = {
     'import/resolver': {
       'eslint-import-resolver-custom-alias': {
         alias: {
-          '@': './src',
+          '@': './src/renderer',
         },
       },
     },

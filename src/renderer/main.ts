@@ -1,8 +1,9 @@
-import { createApp } from 'vue'
+import { createApp } from 'vue';
 import './style.css';
-import App from './App.vue'
-import vuetify from './plugins/vuetify'
+import App from './App.vue';
+import vuetify from './plugins/vuetify';
+import router from './router';
 
 const app = createApp(App);
 
-app.use(vuetify).mount('#app');
+app.use(vuetify).use(router).mount('#app');
