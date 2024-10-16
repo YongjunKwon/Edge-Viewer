@@ -1,7 +1,15 @@
 import { app, BrowserWindow, ipcMain, session } from 'electron';
 import { join } from 'path';
-import * as electron from 'electron';
+import Config from 'electron-config';
+import * as fs from 'node:fs';
+
 let mainWindow;
+let floatingWindow;
+
+const config = new Config();
+
+const rendererPort = process.argv[2];
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     title: 'Edge Viewer',
@@ -12,64 +20,108 @@ function createWindow() {
       nodeIntegration: true,
       contextIsolation: true,
     },
+    show: false,
+  });
+
+  mainWindow.on('ready-to-show', () => {
+    mainWindow.show();
   });
 
   mainWindow.on('closed', () => {
-    mainWindow.destroy();
-    floatingWindow.destroy();
+    if (mainWindow) {
+      mainWindow.destroy();
+      mainWindow = undefined;
+    }
+    if (floatingWindow) {
+      floatingWindow.close();
+    }
   });
 
   // mainWindow.maximize();
 
   if (process.env.NODE_ENV === 'development') {
-    const rendererPort = process.argv[2];
     mainWindow.loadURL(`http://localhost:${rendererPort}`);
-    mainWindow.webContents.openDevTools();
   } else {
     mainWindow.loadFile(join(app.getAppPath(), 'renderer', 'index.html'));
   }
 }
 
-let floatingWindow;
 function toggleFloatingViewer(isActive) {
   if (isActive && !floatingWindow) {
-    floatingWindow = new BrowserWindow({
+    let opts = {
       title: 'Floating Viewer',
-      width: 400,
-      height: 320,
+      width: 325,
+      height: 220,
+      minWidth: 325,
+      minHeight: 220,
+      frame: false,
+      autoHideMenuBar: true,
+      resizable: true,
+      transparent: true,
       webPreferences: {
-        webSecurity: false,
         nodeIntegration: true,
         contextIsolation: true,
         preload: join(__dirname, 'preload.js'),
       },
       show: false,
-      // parent: mainWindow,
-    });
+    };
+    Object.assign(opts, config.get('winBounds'));
 
-    const rendererPort = process.argv[2];
-    const modalPath =
-      process.env.NODE_ENV === 'development'
-        ? `http://localhost:${rendererPort}/#/floatingViewer`
-        : `file://${__dirname}/index.html#floatingViewer`;
+    floatingWindow = new BrowserWindow(opts);
 
     floatingWindow.on('ready-to-show', () => {
       floatingWindow.show();
+      if (config.get('alwaysOnTop')) {
+        floatingWindow.setAlwaysOnTop(true, 'screen');
+      }
+      ipcMain.removeHandler('alwaysOnTop');
+      ipcMain.handleOnce('alwaysOnTop', () => {
+        return config.get('alwaysOnTop');
+      });
     });
 
     floatingWindow.on('close', (event, arg) => {
-      mainWindow.webContents.send('isFloatingViewerClosed');
-      // floatingWindow.webContents.send('fromMain', 'message test');
-      floatingWindow.destroy();
+      if (mainWindow) mainWindow.webContents.send('isFloatingViewerClosed');
+      config.set('winBounds', floatingWindow.getBounds());
     });
 
-    floatingWindow.loadURL(modalPath);
+    if (process.env.NODE_ENV === 'development') {
+      floatingWindow.loadURL(
+        `http://localhost:${rendererPort}/#/floatingViewer`,
+      );
+    } else {
+      floatingWindow.loadURL(
+        // 'file://' +
+        //   join(app.getAppPath(), 'renderer', 'index.html') +
+        //   '#' +
+        //   'floatingViewer',
+        `file://${join(
+          app.getAppPath(),
+          'renderer',
+          'index.html',
+        )}#floatingViewer`,
+      );
+    }
   } else {
     if (floatingWindow) {
+      config.set('winBounds', floatingWindow.getBounds());
       floatingWindow.destroy();
       floatingWindow = undefined;
     }
   }
+}
+
+function toggleAlwaysOnTop(isActive) {
+  if (isActive) {
+    floatingWindow.setAlwaysOnTop(true, 'screen');
+  } else {
+    floatingWindow.setAlwaysOnTop(false, 'screen');
+  }
+  config.set('alwaysOnTop', isActive);
+}
+
+function closeFloatingViewer() {
+  floatingWindow.close();
 }
 
 app.whenReady().then(() => {
@@ -93,12 +145,20 @@ app.whenReady().then(() => {
 });
 
 app.on('window-all-closed', function () {
+  console.log('window-all-closed');
   if (process.platform !== 'darwin') app.quit();
 });
 
-ipcMain.on('message', (event, message, data) => {
-  switch (message) {
+ipcMain.on('message', (event, type, data) => {
+  switch (type) {
     case 'toggleFloatingViewer':
       toggleFloatingViewer(data);
+      break;
+    case 'toggleAlwaysOnTop':
+      toggleAlwaysOnTop(data);
+      break;
+    case 'closeFloatingViewer':
+      closeFloatingViewer();
+      break;
   }
 });

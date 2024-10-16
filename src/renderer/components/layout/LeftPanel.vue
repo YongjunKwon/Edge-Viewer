@@ -25,17 +25,27 @@
 </template>
 
 <script setup>
-import { onMounted, ref, watchEffect } from 'vue';
+import { onMounted, ref, watchEffect, watch } from 'vue';
 
 let edgeAppSwitch = ref(false);
 let floatingViewerSwitch = ref(false);
 
-watchEffect(() => {
-  // if (FloatingViewerSwitch.value) {
-  // console.log('FloatingViewerSwitch:', FloatingViewerSwitch.value);
-  window.electronAPI.send('toggleFloatingViewer', floatingViewerSwitch.value);
-  // }
-});
+// watchEffect(() => {
+//   if (floatingViewerSwitch.value) {
+//     // console.log('FloatingViewerSwitch:', FloatingViewerSwitch.value);
+//     window.electronAPI.send('toggleFloatingViewer', floatingViewerSwitch.value);
+//   }
+// });
+
+watch(
+  () => floatingViewerSwitch.value,
+  (newVal, oldValue) => {
+    console.log('watch newVal, oldValue:', newVal, oldValue);
+    // if (newVal) {
+    window.electronAPI.send('toggleFloatingViewer', newVal);
+    // }
+  },
+);
 
 onMounted(() => {
   window.electronAPI.receive('isFloatingViewerClosed', () => {
